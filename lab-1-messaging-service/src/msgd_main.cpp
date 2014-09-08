@@ -1,8 +1,6 @@
 #include <iostream>
 #include <unistd.h>
 
-#include "some.h"
-
 void error__print_arguments_list() {
   std::cout << "Argument           Definition" << std::endl;
   std::cout << "---------------------------------------------------------" << std::endl;

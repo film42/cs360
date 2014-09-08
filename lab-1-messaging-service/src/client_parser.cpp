@@ -1,11 +1,11 @@
-#include "message_parser.h"
+#include "client_parser.h"
 #include "repl.h"
 
-std::string MessageParser::read(std::string command) {
+std::string ClientParser::read(std::string command) {
   return command;
 }
 
-void MessageParser::send(std::string command) {
+void ClientParser::send(std::string command) {
   std::cout << "- Type your message. End with a blank line -" << std::endl;
   
   std::string message;
@@ -23,10 +23,10 @@ void MessageParser::send(std::string command) {
   
 }
 
-std::string MessageParser::list(std::string command) {
+std::string ClientParser::list(std::string command) {
   return command;
 }
 
-void MessageParser::quit() {
+void ClientParser::quit() {
   REPL::release();
 }

@@ -3,15 +3,15 @@
 
 #include <iostream>
 
-#include "message_parser.h"
+#include "client_parser.h"
 
 class REPL {
   public:
   
     // Needs a better name, but this essentially binds the console to the REPL
-    static void bind(MessageParser evaluator) {
+    static void bind() {
       // Setup
-      auto repl = REPL(evaluator);
+      auto repl = REPL( ClientParser()  );
       // Start
       repl._start();
     }
@@ -22,7 +22,7 @@ class REPL {
     }
   
     // Constructor
-    REPL(MessageParser evaluator) : m_evaluator(evaluator) {}
+    REPL(ClientParser evaluator) : m_evaluator(evaluator) {}
   
     // Members
     std::string read() {
@@ -34,7 +34,7 @@ class REPL {
     }
   
   private:
-    MessageParser m_evaluator;
+    ClientParser m_evaluator;
   
     // A hacky `mutex`
     static bool m_lock;
@@ -47,9 +47,9 @@ class REPL {
         // READ
         auto input = read();
         // EVALUATE
-        auto respone = m_evaluator.evaluate(input);
+        auto response = m_evaluator.evaluate(input);
         // PRINT
-        std::cout << respone << std::endl;
+        std::cout << response << std::endl;
       }
     }
   

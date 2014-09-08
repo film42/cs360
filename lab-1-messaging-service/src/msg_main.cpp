@@ -2,7 +2,7 @@
 #include <unistd.h>
 
 #include "repl.h"
-#include "message_parser.h"
+#include "db.h"
 
 void error__print_arguments_list() {
   std::cout << "Argument           Definition" << std::endl;
@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
   }
   
   // Start the REPL
-  REPL::bind( MessageParser() );
-  
+  REPL::bind();
+
   return 0;
 }

@@ -4,7 +4,7 @@
 #include <functional>
 #include <string>
 
-class MessageParser {
+class ClientParser {
   public:
   
     std::string evaluate(std::string input) {
