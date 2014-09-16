@@ -49,10 +49,10 @@ namespace Response {
 namespace Request {
   // Request
   // put [name] [subject] [length]\n[message]
-  static std::string put(std::string name, std::string subject, int64_t length, std::string message) {
+  static std::string put(std::string name, std::string subject, std::string message) {
     std::stringstream ostream;
 
-    ostream << "put " << name << " " << subject << " " << length << "\n" << message;
+    ostream << "put " << name << " " << subject << " " << message.length() << "\n" << message;
 
     return ostream.str();
   }

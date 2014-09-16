@@ -47,9 +47,7 @@ class REPL {
         // READ
         auto input = read();
         // EVALUATE
-        auto response = m_evaluator.evaluate(input);
-        // PRINT
-        std::cout << response << std::endl;
+        m_evaluator.evaluate(input);
       }
     }
   

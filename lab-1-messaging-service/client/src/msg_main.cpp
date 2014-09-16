@@ -1,8 +1,11 @@
 #include <iostream>
 #include <unistd.h>
+#include <chrono>
+#include <thread>
 
 #include "repl.h"
-#include "db.h"
+#include "client.h"
+#include "templates.h"
 
 void error__print_arguments_list() {
   std::cout << "Argument           Definition" << std::endl;
@@ -19,14 +22,18 @@ int main(int argc, char **argv) {
   }
   
   // DEFAULTS
-  int port = 3000;
+  int port = 3001;
   std::string host = "localhost";
   
   // READ OPTIONS
   int option = -1;
-  while( (option = getopt(argc, argv, "p:d")) != -1 ) {
+  while( (option = getopt(argc, argv, "s:p:d")) != -1 ) {
     // Check options
     switch(option) {
+      case 's':
+        host = std::string(optarg);
+        break;
+
       case 'p':
         port = std::atoi(optarg);
         break;
@@ -40,7 +47,11 @@ int main(int argc, char **argv) {
         return -1;
     }
   }
-  
+
+  std::cout << host << " : " << port << std::endl;
+
+  Client::setup(host, port);
+
   // Start the REPL
   REPL::bind();
 
