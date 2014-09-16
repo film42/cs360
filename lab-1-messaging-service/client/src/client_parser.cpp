@@ -34,12 +34,13 @@ void ClientParser::read(std::string command) {
 
   // Read Request
   auto response = client->read_until('\n');
-  std::cout << response << std::endl;
 
   if( is_error(response) ) {
     std::cout << response;
     return;
   }
+
+  std::cout << split( response ).at(1) << std::endl;
 
   int byte_count = std::stoi( split( response ).back() );
 
@@ -89,13 +90,11 @@ void ClientParser::send(std::string command) {
 
   // Read Request
   auto response = client->read_until('\n');
-  std::cout << response << std::endl;
 
   if( is_error(response) ) {
     std::cout << response;
     return;
   }
-
 
 }
 
@@ -122,7 +121,6 @@ void ClientParser::list(std::string command) {
 
   // Print Response
   auto response = client->read_until('\n');
-  std::cout << response << std::endl;
 
   if( is_error(response) ) {
     std::cout << response;
@@ -132,11 +130,8 @@ void ClientParser::list(std::string command) {
   int list_size = std::stoi( split( response ).back() );
 
   for( int i = 0; i < list_size; ++i ) {
-
-    std::cout << client->read_until('\n') << std::endl;
-
+    std::cout << client->read_until('\n');
   }
-
 
 }
 

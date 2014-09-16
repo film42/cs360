@@ -48,8 +48,6 @@ int main(int argc, char **argv) {
     }
   }
 
-  std::cout << host << " : " << port << std::endl;
-
   Client::setup(host, port);
 
   // Start the REPL

@@ -38,6 +38,9 @@ class DB {
         return message_vector_t();
       }
 
+      // Normalize the index from the 1-base protocol
+      index--;
+
       if( m_data[username].size() <= index ) {
         return message_vector_t();
       }
@@ -60,6 +63,7 @@ class DB {
         subjects.push_back( message.subject );
       }
 
+      return subjects;
     }
 
     void delete_all() {

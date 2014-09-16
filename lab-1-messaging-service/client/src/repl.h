@@ -2,6 +2,7 @@
 #define __messaging_service__repl__
 
 #include <iostream>
+#include <sys/socket.h>
 
 #include "client_parser.h"
 

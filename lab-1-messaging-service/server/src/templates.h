@@ -37,7 +37,8 @@ namespace Response {
     ostream << "list " << subjects.size();
     
     for(int i = 0; i < subjects.size(); ++i) {
-      ostream << "\n" << i << " " << subjects.at(i);
+      // Account for the 1-base protocl, so we use (i + 1)
+      ostream << "\n" << (i + 1) << " " << subjects.at(i);
     }
 
     ostream << "\n";

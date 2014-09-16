@@ -5,47 +5,30 @@
 #include <string>
 
 #include "templates.h"
+#include "utils.h"
+
+// Forward Declaration
+class Server;
 
 class ProtocolParser {
   public:
+
+    ProtocolParser( int client, Server * server );
 
     // Protocol Spec:
     // - put
     // - list
     // - get
     // - reset
-    std::string evaluate(std::string input) {
-      if( !_is_valid(input) ) {
-        return Response::error("Error! Could not parse request");
-      }
-
-      if( input.find("put ") == 0 ) {
-        auto arguments = _explode_raw_request(input.substr(4));
-        return put( arguments );
-      }
-
-      if( input.find("list ") == 0 ) {
-        return list( input.substr(5) );
-      }
-
-      if( input.find("get ") == 0 ) {
-        auto arguments = _explode_raw_request(input.substr(4));
-        return get( arguments );
-      }
-
-      if( input == "reset\n" ) {
-        return reset();
-      }
-
-      return Response::error("Error! Could not parse request");
-    }
-
+    std::string evaluate();
     std::string put(std::vector<std::string> arguments);
     std::string list(std::string name);
     std::string get(std::vector<std::string> arguments);
     std::string reset();
 
   private:
+    int m_client;
+    Server * m_server;
 
     std::vector<std::string> _explode_raw_request(std::string input) {
       std::string buffer;

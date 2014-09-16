@@ -1,5 +1,6 @@
 #include <iostream>
 #include <unistd.h>
+#include "server.h"
 
 void error__print_arguments_list() {
   std::cout << "Argument           Definition" << std::endl;
@@ -14,10 +15,9 @@ int main(int argc, char **argv) {
     error__print_arguments_list();
   }
 
-  int option = 23;
+  int option = -1;
   int port = -1;
-  std::string host;
-  
+
   while( (option = getopt(argc, argv, "p:d")) != -1 ) {
     // Check options
     switch(option) {
@@ -34,6 +34,9 @@ int main(int argc, char **argv) {
         return -1;
     }
   }
+
+  // Run the server!
+  Server().run( port );
 
   return 0;
 }
