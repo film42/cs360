@@ -1,4 +1,3 @@
-#include <Python/Python.h>
 #include "protocol_parser.h"
 #include "db.h"
 #include "server.h"
