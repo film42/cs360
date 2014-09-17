@@ -14,6 +14,7 @@
 
 #include "templates.h"
 #include "protocol_parser.h"
+#include "logger.h"
 
 class Server {
 
@@ -23,7 +24,7 @@ class Server {
       // create and run the server
       create( port );
 
-      std::cout << "Starting server on port: " << port << std::endl;
+      Logger::info("Socket connection established");
 
       serve();
     }
@@ -34,8 +35,11 @@ class Server {
       struct sockaddr_in client_address;
       socklen_t client_length = sizeof(client_address);
 
+      Logger::info("Waiting for incoming connection");
+
       // accept clients
       while ( (client = accept(m_server, (struct sockaddr *)&client_address, &client_length) ) > 0) {
+        Logger::info("Received new connection");
         handle(client);
       }
 
@@ -52,12 +56,17 @@ class Server {
           break;
         // send response
         bool success = send_response( client, response );
+
+        Logger::info("Sent response: " + response);
+
         // break if an error occurred
         if ( !success )
           break;
       }
 
       close(client);
+
+      Logger::info("Client disconnected: Connection closed");
     }
 
     bool send_response(int client, std::string request) {
@@ -158,13 +167,13 @@ class Server {
       return std::string(buffer, bytes_read);
     }
 
-  private:
-    int m_server;
-    std::string m_remaining_buffer;
-
     void close_socket() {
       close( m_server );
     }
+
+  private:
+    int m_server;
+    std::string m_remaining_buffer;
 
     void create(int port) {
       struct sockaddr_in server_address;

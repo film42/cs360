@@ -1,7 +1,10 @@
 #include <iostream>
 #include <unistd.h>
-#include "server.h"
 
+#include "server.h"
+#include "logger.h"
+
+// CLI Output
 void error__print_arguments_list() {
   std::cout << "Argument           Definition" << std::endl;
   std::cout << "---------------------------------------------------------" << std::endl;
@@ -18,6 +21,8 @@ int main(int argc, char **argv) {
   int option = -1;
   int port = -1;
 
+  Logger::set_log_level( LogLevel::FAIL );
+
   while( (option = getopt(argc, argv, "p:d")) != -1 ) {
     // Check options
     switch(option) {
@@ -26,7 +31,7 @@ int main(int argc, char **argv) {
         break;
         
       case 'd':
-        std::cout << "Alter log level" << std::endl;
+        Logger::set_log_level( LogLevel::INFO );
         break;
         
       default:
@@ -35,8 +40,12 @@ int main(int argc, char **argv) {
     }
   }
 
+  Logger::info( "Starting server on port " + std::to_string(port) );
+
+  Server server;
+
   // Run the server!
-  Server().run( port );
+  server.run( port );
 
   return 0;
 }

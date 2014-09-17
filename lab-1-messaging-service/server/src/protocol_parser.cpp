@@ -9,11 +9,11 @@ ProtocolParser::ProtocolParser(int client, Server *server)
 
 std::string ProtocolParser::evaluate() {
 
-  std::cout << "Entering evaluate" << std::endl;
+  Logger::info("Evaluating new request");
 
   auto input = m_server->read_until( m_client, '\n' );
 
-  std::cout << "Received data" << std::endl;
+  Logger::info("Receiving data");
 
   if( !_is_valid(input) ) {
     return Response::error("Error! Could not parse request");
@@ -49,10 +49,12 @@ std::string ProtocolParser::evaluate() {
   }
 
   // RESET REQUEST
-  if( input_vec.front() == "reset" ) {
+  if( input_vec.front() == "reset\n" ) {
     if( input_vec.size() > 1) {
       return Response::error("too many reset arguments");
     }
+
+    Logger::info("Resetting database");
 
     return reset();
   }
@@ -65,7 +67,7 @@ std::string ProtocolParser::evaluate() {
 //
 std::string ProtocolParser::put(std::vector<std::string> arguments) {
   // Check argument length
-  if( arguments.size() != 4 ) {
+  if( arguments.size() < 3 ) {
     return Response::error("invalid arguments");
   }
 
@@ -74,7 +76,7 @@ std::string ProtocolParser::put(std::vector<std::string> arguments) {
 
   auto byte_count = utils::safe_stoi( arguments.back() );
 
-  std::cout << byte_count << std::endl;
+  Logger::info("Getting bytes from client: " + std::to_string(byte_count) );
 
   auto message = m_server->read_for( m_client , byte_count );
 
@@ -92,12 +94,10 @@ std::string ProtocolParser::list(std::string name) {
     return Response::error("invalid arguments");
   }
 
-  // Validate name
-  if( name.find(" ") != std::string::npos ) {
-    return Response::error("invalid arguments");
-  }
+  // Strip the new line character
+  auto cleaned_name = name.substr(0, (name.length() - 1) );
 
-  auto subjects = DB::get_instance()->list( name );
+  auto subjects = DB::get_instance()->list( cleaned_name );
 
   return Response::list( subjects );
 }
@@ -113,10 +113,10 @@ std::string ProtocolParser::get(std::vector<std::string> arguments) {
 
   auto message_vec = DB::get_instance()->get(name, index);
 
-  if(DB::get_instance()->is_user( name ) ) {
+  if( !DB::get_instance()->is_user( name ) ) {
     return Response::error("no such user");
   }
-  else if(message_vec.empty()) {
+  else if( message_vec.empty() ) {
     return Response::error("invalid index");
   }
 
