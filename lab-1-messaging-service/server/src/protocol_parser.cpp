@@ -13,6 +13,11 @@ std::string ProtocolParser::evaluate() {
 
   auto input = m_server->read_until( m_client, '\n' );
 
+  if( input.empty() ) {
+    Logger::info("Received empty request!");
+    return "";
+  }
+
   Logger::info("Receiving data");
 
   if( !_is_valid(input) ) {
