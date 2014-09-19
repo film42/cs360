@@ -22,8 +22,8 @@ int main(int argc, char **argv) {
   }
   
   // DEFAULTS
-  int port = 3001;
-  std::string host = "localhost";
+  int port = -1;
+  std::string host;
   
   // READ OPTIONS
   int option = -1;

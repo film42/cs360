@@ -3,19 +3,18 @@
 #include "client.h"
 #include "templates.h"
 
-void ClientParser::read(std::string command) {
-  auto command_vec = split( command );
+void ClientParser::read(std::vector<std::string> commands) {
 
-  if( command_vec.size() < 2 ) {
+  if( commands.size() != 2 ) {
     std::cout << "Error: Bad read params" << std::endl;
     return;
   }
 
   // Get User
-  auto user = command_vec.front();
+  auto user = commands.front();
 
   // Get Index
-  int index = safe_stoi( command_vec.at(1) );
+  int index = safe_stoi( commands.at(1) );
 
   if( index < 1 ) {
     std::cout << "Error: Bad read params" << std::endl;
@@ -48,20 +47,18 @@ void ClientParser::read(std::string command) {
 
 }
 
-void ClientParser::send(std::string command) {
+void ClientParser::send(std::vector<std::string> commands) {
 
-  auto command_vec = split( command );
-
-  if( command_vec.size() < 2 ) {
+  if( commands.size() != 2 ) {
     std::cout << "Error: Bad send params" << std::endl;
     return;
   }
 
   // Get User
-  auto user = command_vec.front();
+  auto user = commands.front();
 
   // Get Subject
-  auto subject = command_vec.at(1);
+  auto subject = commands.at(1);
 
   // Get Message
   std::cout << "- Type your message. End with a blank line -" << std::endl;
@@ -98,17 +95,15 @@ void ClientParser::send(std::string command) {
 
 }
 
-void ClientParser::list(std::string command) {
+void ClientParser::list(std::vector<std::string> commands) {
 
-  auto command_vec = split( command );
-
-  if( command_vec.size() < 1 ) {
+  if( commands.size() != 1 ) {
     std::cout << "Error: Bad list params" << std::endl;
     return;
   }
 
   // Get User
-  auto user = command_vec.front();
+  auto user = commands.front();
 
   // Get Request
   auto client = Client::get_instance();

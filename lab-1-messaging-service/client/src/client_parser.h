@@ -5,6 +5,8 @@
 #include <string>
 #include <iostream>
 
+#include "utils.h"
+
 class ClientParser {
   public:
 
@@ -15,7 +17,17 @@ class ClientParser {
         return;
       }
 
-      auto method = input.substr(0, 4); // EX: send, read, list, quit
+      auto tokens = utils::split( input );
+
+      if( tokens.empty() ) {
+        std::cout << "Error! Could not parse input" << std::endl;
+        return;
+      }
+
+      auto method = tokens.front();
+
+      tokens.erase( tokens.begin() );
+      auto rest = tokens;
 
       // Check for quit
       if( method.find("quit") != std::string::npos ) {
@@ -31,26 +43,26 @@ class ClientParser {
 
       // Determine command
       if( method.find("read") != std::string::npos ) {
-        read( input.substr(5) );
+        read( rest );
         return;
       }
 
       if( method.find("send") != std::string::npos ) {
-        send( input.substr(5) );
+        send( rest );
         return;
       }
 
       if( method.find("list") != std::string::npos ) {
-        list( input.substr(5) );
+        list( rest );
         return;
       }
 
       std::cout << "Error! Could not parse input" << std::endl;
     }
 
-    void read(std::string command);
-    void send(std::string command);
-    void list(std::string command);
+    void read(std::vector<std::string> commands);
+    void send(std::vector<std::string> commands);
+    void list(std::vector<std::string> commands);
     void quit();
 
   private:
