@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
         
       default:
         error__print_arguments_list();
-        return -1;
+        exit(-1);
     }
   }
 
