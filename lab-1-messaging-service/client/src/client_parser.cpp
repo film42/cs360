@@ -2,6 +2,7 @@
 #include "repl.h"
 #include "client.h"
 #include "templates.h"
+#include "utils.h"
 
 void ClientParser::read(std::vector<std::string> commands) {
 
@@ -39,9 +40,9 @@ void ClientParser::read(std::vector<std::string> commands) {
     return;
   }
 
-  std::cout << split( response ).at(1) << std::endl;
+  std::cout << utils::split( response ).at(1) << std::endl;
 
-  int byte_count = std::stoi( split( response ).back() );
+  int byte_count = std::stoi( utils::split( response ).back() );
 
   std::cout << client->read_for( byte_count ) << std::endl;
 
@@ -122,7 +123,7 @@ void ClientParser::list(std::vector<std::string> commands) {
     return;
   }
 
-  int list_size = std::stoi( split( response ).back() );
+  int list_size = std::stoi( utils::split( response ).back() );
 
   for( int i = 0; i < list_size; ++i ) {
     std::cout << client->read_until('\n');
