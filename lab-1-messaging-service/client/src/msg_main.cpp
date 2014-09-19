@@ -19,6 +19,7 @@ int main(int argc, char **argv) {
   
   if( argc < 2 ) {
     error__print_arguments_list();
+    exit(-1);
   }
   
   // DEFAULTS
@@ -44,6 +45,7 @@ int main(int argc, char **argv) {
         
       default:
         error__print_arguments_list();
+        std::cout << "eae" << std::endl;
         exit(-1);
     }
   }

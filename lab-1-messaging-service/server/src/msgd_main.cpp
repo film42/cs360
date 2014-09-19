@@ -16,6 +16,7 @@ int main(int argc, char **argv) {
 
   if( argc < 2 ) {
     error__print_arguments_list();
+    exit(-1);
   }
 
   int option = -1;
