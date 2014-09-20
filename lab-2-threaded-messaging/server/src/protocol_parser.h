@@ -6,14 +6,15 @@
 
 #include "templates.h"
 #include "utils.h"
+#include "handler.h"
 
 // Forward Declaration
-class Server;
+class Handler;
 
 class ProtocolParser {
   public:
 
-    ProtocolParser( int client, Server * server );
+    ProtocolParser( int client, Handler * handler );
 
     // Protocol Spec:
     // - put
@@ -28,7 +29,7 @@ class ProtocolParser {
 
   private:
     int m_client;
-    Server * m_server;
+    Handler * m_handler;
 
     bool _is_valid( std::string input ) {
       return (input.size() >= 4);

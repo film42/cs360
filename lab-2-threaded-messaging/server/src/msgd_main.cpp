@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
   Server server;
 
   // Run the server!
-  server.run( port );
+  server.run( port, 10 /* Run server with 10 threads */ );
 
   return 0;
 }

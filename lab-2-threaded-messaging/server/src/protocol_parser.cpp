@@ -1,16 +1,16 @@
 #include "protocol_parser.h"
 #include "db.h"
-#include "server.h"
+#include "thread_pool.h"
 
-ProtocolParser::ProtocolParser(int client, Server *server)
-    : m_client(client), m_server(server) {}
+ProtocolParser::ProtocolParser(int client, Handler * handler)
+    : m_client(client), m_handler(handler) {}
 
 
 std::string ProtocolParser::evaluate() {
 
   Logger::info("Evaluating new request");
 
-  auto input = m_server->read_until( m_client, '\n' );
+  auto input = m_handler->read_until( m_client, '\n' );
 
   if( input.empty() ) {
     Logger::info("Received empty request!");
@@ -82,7 +82,7 @@ std::string ProtocolParser::put(std::vector<std::string> arguments) {
 
   Logger::info("Getting bytes from client: " + std::to_string(byte_count) );
 
-  auto message = m_server->read_for( m_client , byte_count );
+  auto message = m_handler->read_for( m_client , byte_count );
 
   // Create message object
   auto message_dto = message_t( subject, message );
