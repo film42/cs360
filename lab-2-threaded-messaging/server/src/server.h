@@ -23,14 +23,14 @@ class Server {
   
     ~Server() { if(m_thread_pool) delete m_thread_pool; }
 
-    void run( int port, int thread_pool_size ) {
+    void run( int port, int thread_pool_size, int buffer_size ) {
 
       // create and run the server
       create( port );
 
       Logger::info("Socket connection established");
 
-      m_thread_pool = new ThreadPool( thread_pool_size );
+      m_thread_pool = new ThreadPool( thread_pool_size, buffer_size );
 
       Logger::info("Thread Pool running at size: " +  std::to_string(thread_pool_size) );
 

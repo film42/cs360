@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <mutex>
 
 #include "types.h"
 #include "logger.h"
@@ -23,11 +24,19 @@ class DB {
     ~DB() { if(m_instance) delete m_instance; }
 
     bool is_user(std::string username) {
+      std::lock_guard<std::mutex> lock( m_db_mutex );
+
+      return m_data.count(username) > 0;
+    }
+
+    bool is_user__unsafe(std::string username) {
       return m_data.count(username) > 0;
     }
 
     void add_message(std::string username, message_t message) {
-      if( !is_user(username) ) {
+      std::lock_guard<std::mutex> lock( m_db_mutex );
+
+      if( !is_user__unsafe(username) ) {
         Logger::info("Adding user: " + username);
         m_data[username] = message_vector_t();
       }
@@ -36,7 +45,7 @@ class DB {
     }
 
     message_vector_t get( std::string username, int64_t index ) {
-      if( !is_user(username) ) {
+      if( !is_user__unsafe(username) ) {
         Logger::info("Attempting to get user that doesn't exist: " + username);
         return message_vector_t();
       }
@@ -46,6 +55,8 @@ class DB {
 
       // Normalize the index from the 1-base protocol
       --index;
+
+      std::lock_guard<std::mutex> lock( m_db_mutex );
 
       if( m_data[username].size() <= index ) {
         Logger::info("Index " + std::to_string(index) + " is beyond range of message size "
@@ -67,7 +78,8 @@ class DB {
 
       Logger::info("Getting list of subjects for user: " + username);
 
-      if( !is_user(username) ) {
+      std::lock_guard<std::mutex> lock( m_db_mutex );
+      if( !is_user__unsafe(username) ) {
         Logger::info("Cannot find username: \"" + username + "\"");
         return subjects;
       }
@@ -85,12 +97,15 @@ class DB {
     }
 
     void delete_all() {
+      std::lock_guard<std::mutex> lock( m_db_mutex );
       // Clear the data map
       m_data.clear();
     }
 
   private:
     static DB * m_instance;
+
+    std::mutex m_db_mutex;
 
     std::unordered_map<std::string, message_vector_t > m_data;
 

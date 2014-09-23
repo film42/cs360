@@ -14,7 +14,7 @@ void Handler::start() {
     // send response
     bool success = send_response( m_client, response );
 
-    Logger::info("Sent response: " + response);
+    Logger::info("Sent response!");
 
     // break if an error occurred
     if ( !success )

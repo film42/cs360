@@ -11,7 +11,7 @@ void * handle_generator(void * context) {
   // force handler to loop on pop()
   for(;;) {
 
-    thread_pool->handle_wait();
+    thread_pool->wait_for_handler();
 
     int client_socket = thread_pool->pop();
 
@@ -39,30 +39,35 @@ void ThreadPool::init() {
 
   Logger::info("Setting up Semaphores");
 
-  // Setup threads running in a thing
+  // Setup the queue mutex
   sem_unlink("/tmp/msg_thread_queue_mutex");
-  m_queue_semaphore = sem_open("/tmp/msg_thread_queue_mutex", O_CREAT, 0644, 1, 1);
+  m_queue_semaphore = sem_open("/tmp/msg_thread_queue_mutex", O_CREAT, 0644, 1);
 
   if (m_queue_semaphore == SEM_FAILED) {
     perror("sem_open failed for queue mutex semaphore");
     return exit(-1);
   }
 
+  // Setup the buffer semaphore with size of capacity
+  sem_unlink("/tmp/msg_buffer_counting_sem");
+  m_buffer_semaphore = sem_open("/tmp/msg_buffer_counting_sem", O_CREAT, 0644, m_buffer_size);
+
+  if (m_buffer_semaphore == SEM_FAILED) {
+    perror("sem_open failed for buffer semaphore");
+    return exit(-1);
+  }
+
   // Setup threads running in a thing
   sem_unlink("/tmp/msg_thread_pool_mutex");
-  m_thread_pool_semaphore = sem_open("/tmp/msg_thread_pool_mutex", O_CREAT, 0644, 1, 1);
+  m_thread_pool_semaphore = sem_open("/tmp/msg_thread_pool_mutex", O_CREAT, 0644, 1);
 
   if (m_thread_pool_semaphore == SEM_FAILED) {
     perror("sem_open failed for thread pool semaphore");
     return exit(-1);
   }
 
+
   Logger::info("Setting up thread pool");
-
-
-  int _v;
-  std::cout << sem_getvalue(m_thread_pool_semaphore, &_v) << std::endl;
-  Logger::info("Thread Pool Sem value: " + std::to_string( _v ) );
 
   // Block the thread_pool until `enqueue` signals
   sem_wait(m_thread_pool_semaphore);

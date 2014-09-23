@@ -14,28 +14,32 @@ class ThreadPool {
   public:
     ThreadPool() {} /* Do nothing */
 
-    ThreadPool(int capacity)
-      : m_capacity(capacity) { init(); }
+    ThreadPool(int capacity, int buffer_size)
+      : m_capacity(capacity), m_buffer_size(buffer_size) { init(); }
 
     void enqueue(int client) {
+      // Only fill the wait queue
+      sem_wait(m_buffer_semaphore);
+      Logger::info("Buffer size: " + std::to_string( m_queue.size() ) );
+
       sem_wait(m_queue_semaphore);
 
       Logger::info("Enqueued new client: " + std::to_string(client) );
 
       m_queue.push( client );
 
-      Logger::info("Front of queue: " + std::to_string( m_queue.front()) );
+      Logger::info("Size of queue: " + std::to_string( m_queue.size() ) );
       sem_post(m_queue_semaphore);
 
       // Tell the thread pool to react
       Logger::info("Signaling a handle...");
       m_capacity = 400;
-      handle_signal();
+
+      signal_handler();
     }
 
     int pop() {
       sem_wait(m_queue_semaphore);
-      std::cout <<  m_capacity << std::endl;
 
       Logger::info("Accessing queue: pop and front: " + std::to_string( m_queue.size()));
       int next = -1;
@@ -47,14 +51,17 @@ class ThreadPool {
 
       Logger::info("Dequeuing a client: " + std::to_string(next) );
 
+      // Signal the buffer semaphore
+      sem_post(m_buffer_semaphore);
+
       return next;
     }
   
-    void handle_signal() {
+    void signal_handler() {
       sem_post(m_thread_pool_semaphore);
     }
 
-    void handle_wait() {
+    void wait_for_handler() {
       sem_wait(m_thread_pool_semaphore);
     }
 
@@ -77,10 +84,12 @@ class ThreadPool {
 
   private:
     int m_capacity;
+    int m_buffer_size;
     std::queue<int> m_queue;
     std::vector<pthread_t> m_thread_pool;
     sem_t * m_queue_semaphore;
     sem_t * m_thread_pool_semaphore;
+    sem_t * m_buffer_semaphore;
 
     void init();
 };
