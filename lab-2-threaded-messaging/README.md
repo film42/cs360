@@ -1,4 +1,4 @@
-Single Threaded Messaging Server and Client
+Threaded Messaging Server and Client
 ----------------------
 
 A project for CS360
