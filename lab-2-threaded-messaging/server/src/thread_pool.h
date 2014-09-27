@@ -6,6 +6,7 @@
 #include <queue>
 #include <vector>
 #include <sys/socket.h>
+#include <fcntl.h>
 #include <unistd.h>
 
 #include "logger.h"
@@ -56,7 +57,7 @@ class ThreadPool {
 
       return next;
     }
-  
+
     void signal_handler() {
       sem_post(m_thread_pool_semaphore);
     }
