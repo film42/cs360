@@ -3,6 +3,7 @@ import select
 import socket
 import sys
 import traceback
+from time import time
 
 from controller import Controller
 from config import Config
@@ -19,10 +20,6 @@ class Poller:
         self.size = 1024
 
         self.config = Config("web.conf")
-
-        # self.poller = 0
-        # self.poll_mask = 0
-        # self.server = 0
 
     def open_socket(self):
         """ Setup the socket for incoming clients """
@@ -46,7 +43,8 @@ class Poller:
         while True:
             # poll sockets
             try:
-                fds = self.poller.poll(timeout=1)
+                fds = self.poller.poll(timeout=self.config.timeout())
+                self.close_idle_connections()
             except:
                 return
             for (fd, event) in fds:
@@ -70,7 +68,7 @@ class Poller:
             self.poller.register(self.server, self.poll_mask)
         else:
             # close the socket
-            self.clients[fd].close()
+            self.clients[fd][0].close()
             del self.clients[fd]
 
     def handle_server(self):
@@ -87,14 +85,18 @@ class Poller:
                 sys.exit()
             # set client socket to be non blocking
             client.setblocking(0)
-            self.clients[client.fileno()] = client
+            self.clients[client.fileno()] = (client, time())
             self.poller.register(client.fileno(), self.poll_mask)
 
     def handle_client(self, fd):
 
         print "Processing client!"
         try:
-            data = self.clients[fd].recv(10000)
+            # Reset the time for mark and sweep
+            self.clients[fd] = (self.clients[fd][0], time())
+            # Try to get data
+            # TODO: Maker sure this will get the entire request
+            data = self.clients[fd][0].recv(10000)
         except socket.error, (value, message):
             # if no data is available, move on to another client
             if value == errno.EAGAIN or errno.EWOULDBLOCK:
@@ -104,10 +106,20 @@ class Poller:
 
         if data:
             print "Process moving to controller!"
-            Controller(self.clients[fd], self.config).handle_request(data)
+            Controller(self.clients[fd][0], self.config).handle_request(data)
         else:
             self.poller.unregister(fd)
-            self.clients[fd].close()
+            self.clients[fd][0].close()
             del self.clients[fd]
 
         print "Done with socket: %d" % fd
+
+    def close_idle_connections(self):
+        """
+        Method use to delete expired clients using the config's timeout function
+        """
+        for key in self.clients.keys():
+            # Check if the mark time has expired
+            if (time() - self.clients[key][1]) > self.config.timeout():
+                print "Closing socket %d" % key
+                self.handle_error(key)
