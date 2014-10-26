@@ -32,7 +32,6 @@ if __name__ == "__main__":
     m = Main()
     m.parse_arguments()
     try:
-        print "Starting Server"
         m.run()
     except KeyboardInterrupt:
         pass

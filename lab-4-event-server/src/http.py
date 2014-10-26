@@ -8,7 +8,7 @@ class HTTPRequest(BaseHTTPRequestHandler):
         self.rfile = StringIO(request_text)
         self.raw_requestline = self.rfile.readline()
         self.error_code = self.error_message = None
-        self.parse_request()
+        self.valid = self.parse_request()
 
     def send_error(self, code, message):
         self.error_code = code

@@ -7,6 +7,7 @@ from time import time
 
 from controller import Controller
 from config import Config
+from cache import ResponseCache
 
 
 class Poller:
@@ -20,6 +21,7 @@ class Poller:
         self.size = 1024
 
         self.config = Config("web.conf")
+        self.cache = ResponseCache()
 
     def open_socket(self):
         """ Setup the socket for incoming clients """
@@ -40,13 +42,18 @@ class Poller:
         self.poller = select.epoll()
         self.poll_mask = select.EPOLLIN | select.EPOLLHUP | select.EPOLLERR
         self.poller.register(self.server, self.poll_mask)
+
+        # Mark and sweep timer
+        last_run = time()
+
         while True:
             # poll sockets
             try:
                 fds = self.poller.poll(timeout=self.config.timeout())
-                self.close_idle_connections()
             except:
                 return
+
+            # Handle any waiting connections
             for (fd, event) in fds:
                 # handle errors
                 if event & (select.POLLHUP | select.POLLERR):
@@ -59,6 +66,23 @@ class Poller:
                 # handle client socket
                 self.handle_client(fd)
 
+            # Send anything sitting in cache now
+            for fd in self.cache.keys():
+                controller = Controller(self.clients[fd][0], self.config, self.cache, fd=fd)
+                controller.send(self.cache.get_cache(fd))
+
+            # Timeout any inactive connections since last check
+            if (time() - last_run) >= self.config.timeout():
+                self.close_idle_connections()
+                last_run = time()
+
+    def close_client(self, fd):
+        # close the socket
+        self.poller.unregister(fd)
+        self.clients[fd][0].close()
+        del self.clients[fd]
+        self.cache.del_cache(fd)
+
     def handle_error(self, fd):
         self.poller.unregister(fd)
         if fd == self.server.fileno():
@@ -67,9 +91,7 @@ class Poller:
             self.open_socket()
             self.poller.register(self.server, self.poll_mask)
         else:
-            # close the socket
-            self.clients[fd][0].close()
-            del self.clients[fd]
+            self.close_client(fd)
 
     def handle_server(self):
         # accept as many clients are possible
@@ -85,18 +107,27 @@ class Poller:
                 sys.exit()
             # set client socket to be non blocking
             client.setblocking(0)
-            self.clients[client.fileno()] = (client, time())
+            self.clients[client.fileno()] = [client, False]
             self.poller.register(client.fileno(), self.poll_mask)
 
-    def handle_client(self, fd):
+    def read_request(self, fd):
+        terminal_token = "\r\n\r\n"  # GET request only
+        request = ''
 
-        print "Processing client!"
+        # while terminal_token not in request:
+        request += self.clients[fd][0].recv(10000)
+
+        return request
+
+    def handle_client(self, fd):
         try:
-            # Reset the time for mark and sweep
-            self.clients[fd] = (self.clients[fd][0], time())
+            controller = Controller(self.clients[fd][0], self.config, self.cache, fd=fd)
+
+            self.clients[fd][1] = True
             # Try to get data
             # TODO: Maker sure this will get the entire request
-            data = self.clients[fd][0].recv(10000)
+            data = self.read_request(fd)
+
         except socket.error, (value, message):
             # if no data is available, move on to another client
             if value == errno.EAGAIN or errno.EWOULDBLOCK:
@@ -105,21 +136,18 @@ class Poller:
             sys.exit()
 
         if data:
-            print "Process moving to controller!"
-            Controller(self.clients[fd][0], self.config).handle_request(data)
+            controller.handle_request(data)
         else:
-            self.poller.unregister(fd)
-            self.clients[fd][0].close()
-            del self.clients[fd]
-
-        print "Done with socket: %d" % fd
+            self.close_client(fd)
 
     def close_idle_connections(self):
         """
         Method use to delete expired clients using the config's timeout function
         """
         for key in self.clients.keys():
-            # Check if the mark time has expired
-            if (time() - self.clients[key][1]) > self.config.timeout():
-                print "Closing socket %d" % key
-                self.handle_error(key)
+            # Delete if a client has not been marked as True since last tick
+            if not self.clients[key][1]:
+                self.close_client(key)
+            else:
+                # Mark socket for removal
+                self.clients[key][1] = False
