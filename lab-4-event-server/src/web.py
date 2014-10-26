@@ -17,8 +17,8 @@ class Main:
 
     def parse_arguments(self):
         """ parse arguments, which include '-p' for port """
-        parser = argparse.ArgumentParser(prog='Echo Server',
-                                         description='A simple echo server that handles one client at a time',
+        parser = argparse.ArgumentParser(prog='Hipster Server 0.0.1',
+                                         description='A simple event based web server built on epoll',
                                          add_help=True)
         parser.add_argument('-p', '--port', type=int, action='store', help='port the server will bind to', default=3000)
         self.args = parser.parse_args()
