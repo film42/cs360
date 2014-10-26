@@ -28,7 +28,6 @@ class Controller:
             except std_socket.error as (error_number, message):
                 if error_number == std_socket.EINTR:
                     continue
-                # TODO: Error check this??
 
     def handle_request(self, request):
         try:
@@ -44,7 +43,6 @@ class Controller:
                 self.response_501()
                 return
 
-            # TODO: Test the host code
             if 'host' in http_request.headers:
                 host = http_request.headers['host'].split(':')[0]
                 abs_path = self.config.absolute_path(http_request.path, host=host)

@@ -111,13 +111,7 @@ class Poller:
             self.poller.register(client.fileno(), self.poll_mask)
 
     def read_request(self, fd):
-        terminal_token = "\r\n\r\n"  # GET request only
-        request = ''
-
-        # while terminal_token not in request:
-        request += self.clients[fd][0].recv(10000)
-
-        return request
+        return self.clients[fd][0].recv(10000)
 
     def handle_client(self, fd):
         try:
