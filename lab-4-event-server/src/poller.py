@@ -22,6 +22,7 @@ class Poller:
 
         self.config = Config("web.conf")
         self.cache = ResponseCache()
+        self.request_cache = {}
 
     def open_socket(self):
         """ Setup the socket for incoming clients """
@@ -119,8 +120,15 @@ class Poller:
 
             self.clients[fd][1] = True
             # Try to get data
-            # TODO: Maker sure this will get the entire request
             data = self.read_request(fd)
+
+            if fd not in self.request_cache:
+                self.request_cache[fd] = data
+            else:
+                self.request_cache[fd] += data
+
+            if "\r\n\r\n" not in self.request_cache[fd]:
+                return
 
         except socket.error, (value, message):
             # if no data is available, move on to another client
@@ -129,8 +137,9 @@ class Poller:
             print traceback.format_exc()
             sys.exit()
 
-        if data:
-            controller.handle_request(data)
+        if fd in self.request_cache:
+            controller.handle_request(self.request_cache[fd])
+            del self.request_cache[fd]
         else:
             self.close_client(fd)
 
